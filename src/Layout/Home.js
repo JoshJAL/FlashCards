@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Switch, useHistory } from 'react-router-dom';
+import Study from './Study';
 
 import { deleteDeck, listDecks } from '../utils/api';
 
