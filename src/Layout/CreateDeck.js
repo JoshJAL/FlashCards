@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 
+
 export default function CreateDeck() {
     
     const initialFormState = {
@@ -39,8 +40,8 @@ export default function CreateDeck() {
             </div>
             
             {/* Deck Form */}
-            <form>
-                <label htmlFor='name'>
+            <form style={{ width: '100% '}}>
+                <label style={{ width: '100%'}} htmlFor='name'>
                     Name:
                     <input 
                         className='form-control'
@@ -48,20 +49,20 @@ export default function CreateDeck() {
                         type='text'
                         name='name'
                         placeholder='Deck Name'
-                        style={{ width: '1075px', margin: '10px 0'}}
+                        style={{ margin: '10px 0'}}
                         onChange={handleChange}
                         value={formData.name}
                     />
                 </label>
                 <br />
-                <label htmlFor='description'>
+                <label style={{ width: '100%' }} htmlFor='description'>
                     Description
                     <textarea 
                         className='form-control'
                         id='description'
                         name='description'
                         rows='5'
-                        style={{ width: '1075px', margin: '10px 0' }}
+                        style={{ width: '100%', margin: '10px 0' }}
                         placeholder='Brief description of the deck'
                         value={formData.description}
                         onChange={handleChange}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, Link, useParams } from 'react-router-dom';
 
 import { useDeck } from '../Hooks/useDeck';
@@ -8,7 +8,20 @@ export default function Study() {
 	const [deck, isLoading] = useDeck(deckId);
 	const [cardIndex, setCardIndex] = useState(0);
 	const [cardSide, setCardSide] = useState('front');
+	const [showModal, setShowModal] = useState(false)
 	const history = useHistory();
+
+	useEffect(() => {
+		if(showModal) {
+			if (!window.confirm('Restart cards?\n\nClick \'cancel\' to retun to the homepage.')) {
+				history.push('/');
+			} else {
+				setCardIndex(0);
+			}
+			setShowModal(false);
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [showModal])
 
 	const onNextClick = (event) => {
 		event.preventDefault();
@@ -16,11 +29,8 @@ export default function Study() {
 			setCardIndex((prev) =>{
 				const nextIndex = prev + 1
 				if (nextIndex > deck.cards.length - 1) {
-					if (!window.confirm('Restart cards?\n\nClick \'cancel\' to retun to the homepage.')) {
-						history.push('/');
-					} else {
-						return 0;
-					}
+					setShowModal(true);
+					return prev;
 				}
 
 				return nextIndex;
