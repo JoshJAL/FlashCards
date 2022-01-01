@@ -7,54 +7,9 @@ import { useDeck } from '../Hooks/useDeck';
 
 
 export default function Deck() {
-	const { deckId, cardId } = useParams()
-	const [deck, isLoading] = useDeck(deckId);
-	const [decks, setDecks] = useState([]);
-	const [cards, setCards] = useState([])
+	const { deckId } = useParams()
+	const [deck, isLoading, refetch] = useDeck(deckId);
 	const history = useHistory();
-	
-
-	useEffect(() => {
-		setDecks([]);
-		const abortController = new AbortController();
-
-		async function loadDeck() {
-			try {
-				const res = await listDecks(abortController.signal);
-				setDecks(res);
-			} catch (error) {
-				if (error.name === 'AbortError') {
-					console.log('Fetching aborted');
-				} else {
-					throw error;
-			}
-		}
-	}
-
-		loadDeck();
-		return () => abortController.abort();
-	}, []);
-
-	// useEffect(() => {
-	// 	setCards([]);
-	// 	const abortController = new AbortController();
-
-	// 	async function loadCard() {
-	// 		try {
-	// 			const res = await listCards(abortController.signal);
-	// 			setCards(res);
-	// 		} catch (error) {
-	// 			if (error.name === 'AbortError') {
-	// 				console.log('Fetching aborted');
-	// 			} else {
-	// 				throw error;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	loadCard();
-	// 	return () => abortController.abort();
-	// }, []);
 
 	const deleteDeckHandler = async (deckId) => {
 		const abortController = new AbortController();
@@ -63,12 +18,13 @@ export default function Deck() {
 			await deleteDeck(deckId, abortController.signal);
 		}
 	}
-	
+
 	const deleteCardHandler = async (cardId) => {
-		const abortController = AbortController();
+		const abortController = new AbortController();
 
 		if (window.confirm('Delete this card?\n\nYou will not be able to recover it.')) {
-			await deleteCard(cardId, abortController.signal)
+			await deleteCard(cardId, abortController.signal);
+			await refetch();
 		}
 	}
 
@@ -77,7 +33,7 @@ export default function Deck() {
 	}
 
 	return (
-		
+
 
 		<div className='container'>
 
@@ -102,52 +58,55 @@ export default function Deck() {
 			<div className='row' style={{ display: 'flex', width: '100%', justifyContent: 'space-between', margin: '10px 0' }}>
 				<div>
 
-					<button type='button' style={{marginRight: '5px'}} className='btn btn-secondary' onClick={() => history.push(`/decks/${deckId}/cards/${deck.cardId}/edit`)}>
+					<button type='button' style={{marginRight: '5px'}} className='btn btn-secondary' onClick={() => history.push(`/decks/${deckId}/edit`)}>
 						Edit
 					</button>
 					<button type='button' style={{ marginRight: '5px'}} className='btn btn-primary' onClick={() => history.push(`/decks/${deckId}/study`)}>
-						<span class="oi oi-book" style={{ marginRight: '5px' }} />
+						<span className="oi oi-book" style={{ marginRight: '5px' }} />
 						Study
 					</button>
-					<button type='button' className='btn btn-primary' >
-						<span class="oi oi-plus" style={{ marginRight: '5px' }} />
+					<button type='button' className='btn btn-primary' onClick={() => history.push(`/decks/${deck.id}/cards/new`)} >
+						<span className="oi oi-plus" style={{ marginRight: '5px' }} />
 						Add Cards
 					</button>
 				</div>
-			
+
 				<button type='button' className='btn btn-danger' onClick={() => deleteDeckHandler(deck.id)}>
-					<span class="oi oi-trash" />
+					<span className="oi oi-trash" />
 				</button>
 			</div>
 
 			<div className='row' style={{ width: '100%', justifyContent: 'space-between', display: 'flex', margin: '10px 0'}}>
 				<h2>Cards</h2>
+				{(deck.cards || []).map((card) => (
+					<div key={card.id} className='row border rounded' style={{ margin: '10px 0', width: '100%' }}>
+						<div className='col'>
+							<p>
+								{card.front}
+							</p>
+						</div>
+						<div className='col'>
+							<p>
+								{card.back}
+							</p>
+						</div>
+						<div className='row' style={{ alignItems: 'left', margin: '10px' }}>
+							<button type='button' className='btn btn-secondary' style={{ marginRight: '5px' }} onClick={() => history.push(`/decks/${deck.id}/cards/${card.id}/edit`)}>
+							<span style={{ marginRight: '5px' }} className="oi oi-pencil" />Edit
+							</button>
+							<button type='button' className='btn btn-danger' onClick={() => deleteCardHandler(card.id)}>
+								<span className="oi oi-trash" />
+							</button>
+						</div>
+					</div>
+				))}
 			</div>
-			
-			<div className='row border rounded' style={{ margin: '10px 0' }}>
-				<div className='col'>
-					<p>
-						{deck.cards.front}
-					</p>					
-				</div>
-				<div className='col'> 
-					<p>
-						{deck.cards.back}
-					</p>
-				</div>
-				<div className='row' style={{ alignItems: 'left', margin: '10px' }}>
-					<button type='button' className='btn btn-secondary' style={{ marginRight: '5px' }} >
-					<span style={{ marginRight: '5px' }} class="oi oi-pencil" />Edit
-					</button>
-					<button type='button' className='btn btn-danger'>
-						<span class="oi oi-trash" />
-					</button>
-				</div>
-			</div>
+
+
 
 		</div>
 	)
-		
+
 }
 
 

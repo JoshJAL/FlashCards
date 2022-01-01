@@ -1,31 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import Study from './Study';
 
 import { deleteDeck, listDecks } from '../utils/api';
 
+const abortController = new AbortController();
 function Decks() {
 	const [decks, setDecks] = useState([]);
 	const history = useHistory();
-
-	useEffect(() => {
-		setDecks([]);
-		const abortController = new AbortController();
-
-		async function loadDeck() {
-			try {
-				const res = await listDecks(abortController.signal);
-				setDecks(res);
-			} catch (error) {
-				if (error.name === 'AbortError') {
-					console.log('Fetching aborted');
-				} else {
-					throw error;
+	async function loadDecks() {
+		try {
+			const res = await listDecks(abortController.signal);
+			setDecks(res);
+		} catch (error) {
+			if (error.name === 'AbortError') {
+				console.log('Fetching aborted');
+			} else {
+				throw error;
 			}
 		}
 	}
+	useEffect(() => {
+		setDecks([]);
 
-		loadDeck();
+		loadDecks();
 		return () => abortController.abort();
 	}, []);
 
@@ -34,12 +31,13 @@ function Decks() {
 
 		if (window.confirm('Delete this deck?\n\nYou will not be able to recover it.')) {
 			await deleteDeck(deckId, abortController.signal);
+			await loadDecks();
 		}
 	}
 
 	return (
 		decks.map((deck) => (
-			<div className='container border rounded' style={{ margin: '10px 0' }}>
+			<div key={deck.id} className='container border rounded' style={{ margin: '10px 0' }}>
 
 				{/* header */}
 				<div className='row' style={{ width: '100%', justifyContent: 'space-between', display: 'flex', margin: '10px 0' }}>
@@ -64,19 +62,19 @@ function Decks() {
 					<div>
 
 						<button type='button' style={{ marginRight: '5px'}} className='btn btn-secondary' onClick={() => history.push(`/decks/${deck.id}`)}>
-							<span class="oi oi-eye" style={{ marginRight: '5px' }}/>
+							<span className="oi oi-eye" style={{ marginRight: '5px' }}/>
 							View
 						</button>
 
 						<button type='button' className='btn btn-primary' onClick={() => history.push(`/decks/${deck.id}/study`)}>
-							<span class="oi oi-book" style={{ marginRight: '5px' }} />
+							<span className="oi oi-book" style={{ marginRight: '5px' }} />
 							Study
 						</button>
 
 					</div>
 
 					<button type='button' className='btn btn-danger' onClick={() => deleteHandler(deck.id)}>
-						<span class="oi oi-trash" />
+						<span className="oi oi-trash" />
 					</button>
 
 				</div>

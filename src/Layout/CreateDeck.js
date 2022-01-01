@@ -1,24 +1,29 @@
 import React, { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-
+import DeckForm from './DeckForm';
+import { createDeck } from '../utils/api';
+const initialFormState = {
+	name: '',
+	description: '',
+};
 
 export default function CreateDeck() {
-    
-    const initialFormState = {
-        name: '',
-        description: '',
-    }; 
+	const history = useHistory();
+	const [formData, setFormData] = useState({ ...initialFormState });
+	const handleChange = ({ target }) => {
+			setFormData({
+					...formData,
+					[target.name]: target.value,
+			});
+	};
 
-    const [formData, setFormData] = useState({ ...initialFormState });
-    const handleChange = ({ target }) => {
-        setFormData({
-            ...formData,
-            [target.name]: target.value,
-        });
-    };
+	const onSubmit = async (e) => {
+		e.preventDefault();
+		const abortController = new AbortController();
+		const deck = await createDeck(formData, abortController.signal);
+		history.push(`/decks/${deck.id}`);
+	}
 
-    const history = useHistory();
-    
 	return (
         <div className="container">
            <div style={{ margin: '10px 0'}} className='h5 row border rounded bg-light'>
@@ -29,53 +34,17 @@ export default function CreateDeck() {
                     <span className='text-secondary'>Create Deck</span>
                 </div>
 
-            </div> 
+            </div>
 
             <div>
                 {/* Header */}
                 <div>
                     <h3>Create Deck</h3>
-                </div> 
+                </div>
 
             </div>
-            
-            {/* Deck Form */}
-            <form style={{ width: '100% '}}>
-                <label style={{ width: '100%'}} htmlFor='name'>
-                    Name:
-                    <input 
-                        className='form-control'
-                        id='name'
-                        type='text'
-                        name='name'
-                        placeholder='Deck Name'
-                        style={{ margin: '10px 0'}}
-                        onChange={handleChange}
-                        value={formData.name}
-                    />
-                </label>
-                <br />
-                <label style={{ width: '100%' }} htmlFor='description'>
-                    Description
-                    <textarea 
-                        className='form-control'
-                        id='description'
-                        name='description'
-                        rows='5'
-                        style={{ width: '100%', margin: '10px 0' }}
-                        placeholder='Brief description of the deck'
-                        value={formData.description}
-                        onChange={handleChange}
-                    />
-                </label>
-            </form>
 
-            <div className='row'>
-
-                <button type='button' style={{ marginRight: '10px', marginLeft: '15px'}} className='btn btn-secondary' onClick={() => history.push('/')}>Cancel</button>
-                <button type='button' className='btn btn-primary' onClick={() => history.push('/decks/:deckId')}>Submit</button>
-
-            </div> 
+						<DeckForm handleChange={handleChange} formData={formData} onSubmit={onSubmit} />
 
         </div>
     )

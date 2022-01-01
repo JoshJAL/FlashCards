@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useParams, Link } from 'react-router-dom';
+import { updateCard } from '../utils/api';
 
 import { useDeck } from '../Hooks/useDeck';
+import { useCard } from '../Hooks/useCard';
+import CardForm from './CardForm';
+
 
 export default function EditCard() {
-    
-    const { deckId } = useParams();
-    const { deck, isLoading } = useDeck(deckId);
+    const { deckId, cardId } = useParams();
+    const [deck, isDeckLoading] = useDeck(deckId);
+		const [card, isCardLoading] = useCard(cardId);
 
-    const initialFormState = {
-        front: '',
-        back: '',
-    };
-
-    const [formData, setFormData] = useState({ ...initialFormState });
+    const [formData, setFormData] = useState(null);
     const handleChange = ({ target }) => {
         setFormData({
             ...formData,
@@ -21,7 +20,24 @@ export default function EditCard() {
         });
     };
 
+		useEffect(() => {
+			if (!isCardLoading && card && !formData) {
+				setFormData(card);
+		}
+		}, [card, formData, isCardLoading])
+
     const history = useHistory();
+		const navigateToDeck = () => history.push(`/decks/${deckId}`);
+
+		const handleSubmit = async (e) => {
+			e.preventDefault();
+			const abortController = new AbortController();
+			await updateCard(formData, abortController.signal);
+			navigateToDeck();
+		}
+		if (isDeckLoading || deck == null || formData == null || isCardLoading || card == null) {
+			return <h4>Loading...</h4>
+		}
 
     return (
         <div className='container'>
@@ -32,10 +48,11 @@ export default function EditCard() {
                     <Link to={'/'} className='text-primary'><span className="oi oi-home" /> Home</Link>
                     <span style={{ margin: '0 5px'}} className='text-secondary'>/</span>
                     <Link to={`/decks/${deckId}`} className='text-primary'>{deck.name}</Link>
+										<span style={{ margin: '0 5px'}} className='text-secondary'>/</span>
                     <span className='text-secondary'>Edit Card: { cardId }</span>
                 </div>
 
-            </div> 
+            </div>
 
             <div>
 
@@ -45,46 +62,7 @@ export default function EditCard() {
 
             </div>
 
-            <form style={{ width: '100%' }}>
-                <label style={{ width: '100%' }} htmlFor='front'>
-                    Front
-                    <input 
-                        className='form-control'
-                        id='font'
-                        type='text'
-                        name='front'
-                        placeholder=''
-                        style={{ margin: '10px 0' }}
-                        onChange={handleChange}
-                        value={formData.front}
-                    />
-                </label>
-                <br />
-                <label style={{ width: '100%' }} htmlFor='back'>
-                    Back
-                    <input 
-                        className='form-control'
-                        id='back'
-                        type='text'
-                        name='back'
-                        placeholder=''
-                        style={{ margin: '10px 0' }}
-                        onChange={handleChange}
-                        value={formData.back}
-                    />
-                </label>
-            </form>
-
-            <div className='row'>
-
-                <button type='button' style={{ marginRight: '10px', marginLeft: '15px' }} className='btn btn-secondary'>
-                    Cancel
-                </button>
-                <button type='button' className='btn btn-primary'>
-                    Submit
-                </button>
-
-            </div>
+            <CardForm formData={formData} handleChange={handleChange} deckId={deckId} handleSubmit={handleSubmit} />
 
         </div>
     )

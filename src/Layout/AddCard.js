@@ -2,27 +2,36 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, Link, useParams } from 'react-router-dom';
 
 import { useDeck } from '../Hooks/useDeck';
+import CardForm from './CardForm';
+import { createCard } from '../utils/api';
+const initialFormState = {
+	front: '',
+	back: '',
+};
 
 export default function AddCard() {
-
     const { deckId } = useParams();
-    const { deck, isLoading } = useDeck(deckId);
-    
-    const initialFormState = {
-        front: '',
-        back: '',
-    };
-
+    const [ deck, isLoading ] = useDeck(deckId);
     const [formData, setFormData] = useState({ ...initialFormState });
+		const history = useHistory();
+
+		const handleSubmit = async (e) => {
+			e.preventDefault();
+			const abortController = new AbortController();
+			await createCard(deckId, formData, abortController.signal);
+			setFormData(initialFormState);
+		}
+
     const handleChange = ({ target }) => {
         setFormData({
-            ...formData, 
+            ...formData,
             [target.name]: target.value,
         });
     };
 
-    const history = useHistory();
-
+		if (isLoading || deck == null) {
+			return <h4>Loading...</h4>
+		}
     return (
         <div className='container'>
 
@@ -32,10 +41,11 @@ export default function AddCard() {
                     <Link to={'/'} className='text-primary'><span className="oi oi-home" /> Home</Link>
                     <span style={{ margin: '0 5px'}} className='text-secondary'>/</span>
                     <Link to={`/decks/${deckId}`} className='text-primary'>{deck.name}</Link>
+										<span style={{ margin: '0 5px'}} className='text-secondary'>/</span>
                     <span className='text-secondary'>Add Card</span>
                 </div>
 
-            </div> 
+            </div>
 
             <div>
 
@@ -45,46 +55,7 @@ export default function AddCard() {
 
             </div>
 
-            <form style={{ width: '100%'}}>
-                <label style={{ width: '100%'}} htmlFor='front'>
-                    Front
-                    <input
-                        className='form-control'
-                        id='front'
-                        type='text'
-                        name='front'
-                        placeholder='Front side of card'
-                        style={{ margin: '10px 0' }}
-                        onChange={handleChange}
-                        value={formData.front}
-                    />
-                </label>
-                <br />
-                <label style={{ width: '100%' }} htmlFor='back'>
-                    Back
-                    <input 
-                        className='form-control'
-                        id='back'
-                        type='text'
-                        name='back'
-                        placeholder='Back side of the card'
-                        style={{ margin: '10px 0' }}
-                        onChange={handleChange}
-                        value={formData.back}
-                    />
-                </label>
-            </form>
-
-            <div className='row'>
-
-                <button type='button' style={{ marginRight: '10px', marginLeft: '15px' }} className='btn btn-secondary'>
-                    Done
-                </button>
-                <button type='button' className='btn btn-primary'>
-                    Save
-                </button>
-
-            </div>
+            <CardForm deckId={deckId} handleSubmit={handleSubmit} formData={formData} handleChange={handleChange} />
 
         </div>
     )

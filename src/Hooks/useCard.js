@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
-import { readDeck } from '../utils/api';
+import { readCard } from '../utils/api';
 
-// custom hook to store data for deck
+// custom hook to store data for card
 const abortController = new AbortController();
-export  function useDeck(deckId) {
+export  function useCard(cardId) {
 	const [isLoading, setIsLoading] = useState(true)
-	const [deck, setDeck] = useState(null);
+	const [card, setCard] = useState(null);
 
-	async function loadDeck() {
+	async function loadCard() {
 		try {
-			const deck = await readDeck(deckId, abortController.signal)
-			setDeck(deck)
+			const card = await readCard(cardId, abortController.signal)
+			setCard(card)
 			setIsLoading(false)
 		} catch (error) {
 			if (error.name === 'AbortError') {
@@ -23,11 +23,10 @@ export  function useDeck(deckId) {
 
 	useEffect(() => {
 		setIsLoading(true)
-		loadDeck();
+		loadCard();
 		return () => abortController.abort();
-	}, [deckId]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-	const refetch = () => loadDeck();
-
-	return [deck, isLoading, refetch];
+	return [card, isLoading];
 }
