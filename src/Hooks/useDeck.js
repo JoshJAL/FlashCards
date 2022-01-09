@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect,  useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { readDeck } from '../utils/api';
 
 // custom hook to store data for deck
-const abortController = new AbortController();
 export  function useDeck(deckId) {
 	const [isLoading, setIsLoading] = useState(true)
 	const [deck, setDeck] = useState(null);
+	const location = useLocation();
 
-	async function loadDeck() {
+	const loadDeck = useCallback(async (controller) => {
 		try {
-			const deck = await readDeck(deckId, abortController.signal)
-			setDeck(deck)
+			const res = await readDeck(deckId, controller.signal)
+			setDeck(() => res)
 			setIsLoading(false)
 		} catch (error) {
 			if (error.name === 'AbortError') {
@@ -19,15 +20,28 @@ export  function useDeck(deckId) {
 				throw error;
 			}
 		}
-	}
+	}, [deckId])
 
 	useEffect(() => {
+		const controller = new AbortController();
+		if (isLoading) {
+			return
+		}
+
 		setIsLoading(true)
-		loadDeck();
-		return () => abortController.abort();
-	}, [deckId]);
+		loadDeck(controller);
 
-	const refetch = () => loadDeck();
+		return () => {
+			controller.abort();
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
-	return [deck, isLoading, refetch];
+
+	useEffect(() => {
+		const controller = new AbortController();
+		loadDeck(controller);
+	}, [location.pathname, loadDeck])
+
+	return [deck, isLoading, loadDeck];
 }

@@ -38,12 +38,12 @@ export default function Study() {
 			return 'front';
 		});
 	}
-	
-	if (isLoading || deck == null) {
+
+	if (isLoading || deck == null || deck.cards == null) {
 		return <h4>Loading...</h4>
 	}
 
-	if (deck.cards.length <= 2) {
+	if (deck?.cards?.length <= 2) {
 		return (
 			<div className='container'>
 				<div style={{ margin: '10px 0'}} className='h5 row border rounded bg-light'>
@@ -66,7 +66,7 @@ export default function Study() {
 					</div>
 
 					<div style={{ width: '100%', justifyContent: 'space-between', display: 'flex', margin: '10px 0'}} className='row'>
-						<h4>Not enough cards.</h4> 
+						<h4>Not enough cards.</h4>
 					</div>
 
 					<div style={{ width: '100%', justifyContent: 'space-between', display: 'flex', margin: '10px 0'}} className='row'>

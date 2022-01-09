@@ -3,27 +3,29 @@ import { useHistory } from 'react-router-dom';
 
 import { deleteDeck, listDecks } from '../utils/api';
 
-const abortController = new AbortController();
 function Decks() {
 	const [decks, setDecks] = useState([]);
 	const history = useHistory();
-	async function loadDecks() {
-		try {
-			const res = await listDecks(abortController.signal);
-			setDecks(res);
-		} catch (error) {
-			if (error.name === 'AbortError') {
-				console.log('Fetching aborted');
-			} else {
-				throw error;
+
+	useEffect(() => {
+		const abortController = new AbortController();
+		async function loadDecks() {
+			try {
+				const res = await listDecks(abortController.signal);
+				setDecks(res);
+			} catch (error) {
+				if (error.name === 'AbortError') {
+					console.log('Fetching aborted');
+				} else {
+					throw error;
+				}
 			}
 		}
-	}
-	useEffect(() => {
-		setDecks([]);
 
 		loadDecks();
-		return () => abortController.abort();
+		return () => {
+			abortController.abort();
+		}
 	}, []);
 
 	const deleteHandler = async (deckId) => {
@@ -31,7 +33,7 @@ function Decks() {
 
 		if (window.confirm('Delete this deck?\n\nYou will not be able to recover it.')) {
 			await deleteDeck(deckId, abortController.signal);
-			await loadDecks();
+			setDecks(await listDecks(abortController.signal));
 		}
 	}
 

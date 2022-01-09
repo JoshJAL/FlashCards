@@ -1,7 +1,7 @@
-import React, { useState, useEffect} from 'react';
+import React from 'react';
 import { Link, useHistory, useParams } from 'react-router-dom';
 
-import { deleteDeck, listDecks, deleteCard } from '../utils/api';
+import { deleteDeck, deleteCard } from '../utils/api';
 
 import { useDeck } from '../Hooks/useDeck';
 
@@ -24,7 +24,7 @@ export default function Deck() {
 
 		if (window.confirm('Delete this card?\n\nYou will not be able to recover it.')) {
 			await deleteCard(cardId, abortController.signal);
-			await refetch();
+			await refetch(abortController);
 		}
 	}
 

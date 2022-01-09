@@ -5,24 +5,19 @@ import { updateDeck } from '../utils/api';
 
 import { useDeck } from '../Hooks/useDeck';
 
-const initialFormState = {
-	name: '',
-	description: '',
-};
 
 export default function CreateDeck() {
 	const history = useHistory();
 	const { deckId } = useParams();
 	const [deck, isLoading] = useDeck(deckId);
 
-
-    const [formData, setFormData] = useState(null);
-    const handleChange = ({ target }) => {
-        setFormData({
-            ...formData,
-            [target.name]: target.value,
-        });
-    };
+	const [formData, setFormData] = useState(null);
+	const handleChange = ({ target }) => {
+			setFormData({
+					...formData,
+					[target.name]: target.value,
+			});
+	};
 
 		useEffect(() => {
 			if(!isLoading && deck && !formData) {
